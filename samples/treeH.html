@@ -88,6 +88,22 @@ function Tree(
     .attr("font-family", "sans-serif")
     .attr("font-size", 10);
 
+    .on("click", () => {
+      root.each((d) => {
+        if (!d.children && d.data.children) {
+          d._children = d.children = d.data.children;
+          d.data.children = null;
+        } else if (d.children) {
+          d._children = d.children;
+          d.children = null;
+        } else if (d._children) {
+          d.children = d._children;
+          d._children = null;
+        }
+      });
+      Tree(data, options);
+    });
+
   svg
     .append("g")
     .attr("fill", "none")
