@@ -35,23 +35,24 @@ var i = 0,
     duration = 750,
     root;
 
-var tree = d3.tree()
-    .size([height, width]);
+// Check if tree layout function exists in d3
+if (!d3.tree) {
+  console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
+}
 
-var diagonal = d3.linkHorizontal()
-    .x(function(d) { return d.y; })
-    .y(function(d) { return d.x; });
+// Check if diagonal function exists in d3.svg
+if (!d3.svg || !d3.svg.diagonal) {
+  console.error("d3.svg.diagonal is not available. Make sure you're using D3 version 7 or above.");
+}
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.right + margin.left)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+// Check if JSON data loading is successful
 d3.json("flare.json", function(error, flare) {
-  if (error) throw error;
+  if (error) {
+    console.error("Error loading JSON data:", error);
+    return;
+  }
 
-  root = d3.hierarchy(flare);
+  root = flare;
   root.x0 = height / 2;
   root.y0 = 0;
 
@@ -70,10 +71,27 @@ d3.json("flare.json", function(error, flare) {
 d3.select(self.frameElement).style("height", "800px");
 
 function update(source) {
+  // Check if tree layout function exists in d3
+  if (!d3.tree) {
+    console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
+    return;
+  }
+
+  // Check if nodes and links are present
+  if (!source || !source.children) {
+    console.error("No nodes or links to update.");
+    return;
+  }
 
   // Compute the new tree layout.
-  var nodes = tree(root).descendants(),
-      links = tree(root).links();
+  var nodes = d3.tree().nodes(root).reverse(),
+      links = d3.tree().links(nodes);
+
+  // Check if nodes and links are present after computing layout
+  if (!nodes || !links) {
+    console.error("Failed to compute tree layout.");
+    return;
+  }
 
   // Normalize for fixed-depth.
   nodes.forEach(function(d) { d.y = d.depth * 180; });
