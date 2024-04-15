@@ -169,31 +169,3 @@ function click(d) {
 
 </script>
 
-<script>
-  flare = {
-    name: "Top LVL",
-    children: [
-      {
-        name: "Level 2: A",
-        children: [{ name: "Son of A" }, { name: "Daughter of A" }]
-      },
-      { name: "Level 2: B" }
-    ]
-  };
-
-</script>
-
-<script>
-  // below uses Tree method defined above, which takes parameters as dict
-  // to configure most visuals, it alos has defaults defined, eg width.
-  
-  chart = Tree(flare, {    // The JSON data
-    label: (d) => d.name,  // Name on the node
-    width: 400,            // width of chart
-    dyNode: 50,            // height of node
-  });
-  
-  // add chart to the DOM
-  document.getElementById("demo").appendChild(chart);
-
-</script>
