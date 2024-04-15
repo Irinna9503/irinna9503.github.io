@@ -96,16 +96,6 @@ update(root);
 
 d3.select(self.frameElement).style("height", "800px");
 
-var link = d3.linkHorizontal()
-  .x(function(d) {
-    return d.x;
-  })
-  .y(function(d) {
-    return d.y;
-  });
-
-console.log("Diagonal:", link);
-
 function update(source) {
   if (!d3.tree) {
     console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
@@ -168,31 +158,39 @@ function update(source) {
 
   nodeExit.select("text").style("fill-opacity", 1e-6);
 
-  var linkSelection = svg.selectAll(".link").data(links, function (d) {
+  var link = svg.selectAll(".link").data(links, function (d) {
     return d.target.id;
   });
 
-linkSelection.enter().insert("svg:path", "g")
-  .style("fill", "none")
-  .style("stroke", "#000")
-  .attr("class", "link")
-  .attr("d", function(d) {
-    var o = { x: source.x0, y: source.y0 };
-    return link({ source: o, target: o }); // Use your custom diagonal function here
-  })
-  .transition()
-  .duration(duration)
-  .attr("d", link(data)); // Use your custom diagonal function here as well
+  link.enter().insert("svg:path", "g")
+    .style("fill", "none")
+    .style("stroke", "#000")
+    .attr("class", "link")
+    .attr("d", function(d) {
+      var o = { x: source.x0, y: source.y0 };
+      return "M" + o.y + "," + o.x
+        + "C" + (o.y + source.y) / 2 + "," + o.x
+        + " " + (o.y + source.y) / 2 + "," + source.x
+        + " " + source.y + "," + source.x;
+    })
+    .transition()
+    .duration(duration)
+    .attr("d", function(d) {
+      return "M" + d.target.y + "," + d.target.x
+        + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
+        + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
+        + " " + d.source.y + "," + d.source.x;
+    });
 
-  linkSelection.exit().transition().duration(duration).attr("d", function (d) {
+  link.exit().transition().duration(duration).attr("d", function (d) {
     var o = {
       x: source.x,
       y: source.y
     };
-    return link({
-      source: o,
-      target: o
-    });
+    return "M" + o.y + "," + o.x
+        + "C" + (o.y + source.y) / 2 + "," + o.x
+        + " " + (o.y + source.y) / 2 + "," + source.x
+        + " " + source.y + "," + source.x;
   }).remove();
 
   nodes.forEach(function (d) {
