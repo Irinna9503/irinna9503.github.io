@@ -81,6 +81,8 @@ root = d3.hierarchy(flareData[0]);
 root.x0 = height / 2;
 root.y0 = 0;
 
+console.log("Root:", root);
+
 function collapse(d) {
   if (d.children) {
     d._children = d.children;
@@ -98,13 +100,15 @@ var diagonal = d3.linkHorizontal()
     .x(function(d) { return d.y; })
     .y(function(d) { return d.x; });
 
-console.log("Value of diagonal:", diagonal);
+console.log("Diagonal:", diagonal);
 
 function update(source) {
   if (!d3.tree) {
     console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
     return;
   }
+
+  console.log("Updating with source:", source);
 
   if (!source || !source.children) {
     console.error("No nodes or links to update.");
@@ -114,6 +118,9 @@ function update(source) {
   var treeLayout = d3.tree().size([height, width]);
   var nodes = treeLayout(root).descendants();
   var links = treeLayout(root).links();
+
+  console.log("Nodes:", nodes);
+  console.log("Links:", links);
 
   nodes.forEach(function (d) {
     d.y = d.depth * 180;
@@ -161,19 +168,18 @@ function update(source) {
     return d.target.id;
   });
 
+  link.enter().insert("path", "g").attr("class", "link").attr("d", function (d) {
+    var o = {
+      x: source.x0,
+      y: source.y0
+    };
+    return diagonal({
+      source: o,
+      target: o
+    });
+  });
 
-    link.enter().insert("svg:path", "g")
-  .style("fill", "none")
-  .style("stroke", "#000")
-  .attr("class", "link")
-  .attr("d", function(d) {
-    var o = { x: source.x0, y: source.y0 };
-    return diagonal({ source: o, target: o }); // Use your custom diagonal function here
-  })
-  .transition()
-  .duration(duration)
-  .attr("d", diagonal); // Use your custom diagonal function here as well
-
+  link.transition().duration(duration).attr("d", diagonal);
 
   link.exit().transition().duration(duration).attr("d", function (d) {
     var o = {
