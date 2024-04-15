@@ -41,7 +41,7 @@ var svg = d3.select("body").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+  
 
 // Check if tree layout function exists in d3
 if (!d3.tree) {
@@ -73,6 +73,11 @@ d3.json("flare.json", function(error, flare) {
 
 d3.select(self.frameElement).style("height", "800px");
 
+// Define the diagonal function for horizontal links
+var diagonal = d3.linkHorizontal()
+    .x(function(d) { return d.y; })
+    .y(function(d) { return d.x; });
+  
 function update(source) {
   // Check if tree layout function exists in d3
   if (!d3.tree) {
