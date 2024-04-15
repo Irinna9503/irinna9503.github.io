@@ -168,11 +168,11 @@ function update(source) {
 
   nodeExit.select("text").style("fill-opacity", 1e-6);
 
-  var link = svg.selectAll(".link").data(links, function (d) {
+  var linkSelection = svg.selectAll(".link").data(links, function (d) {
     return d.target.id;
   });
 
-link.enter().insert("svg:path", "g")
+linkSelection.enter().insert("svg:path", "g")
   .style("fill", "none")
   .style("stroke", "#000")
   .attr("class", "link")
@@ -184,12 +184,12 @@ link.enter().insert("svg:path", "g")
   .duration(duration)
   .attr("d", link(data)); // Use your custom diagonal function here as well
 
-  link.exit().transition().duration(duration).attr("d", function (d) {
+  linkSelection.exit().transition().duration(duration).attr("d", function (d) {
     var o = {
       x: source.x,
       y: source.y
     };
-    return customDiagonal({
+    return link({
       source: o,
       target: o
     });
