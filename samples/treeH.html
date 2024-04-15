@@ -96,11 +96,11 @@ update(root);
 
 d3.select(self.frameElement).style("height", "800px");
 
-var diagonal = d3.linkHorizontal()
+var customDiagonal = d3.linkHorizontal()
     .x(function(d) { return d.y; })
     .y(function(d) { return d.x; });
 
-console.log("Diagonal:", diagonal);
+console.log("Diagonal:", customDiagonal);
 
 function update(source) {
   if (!d3.tree) {
@@ -168,25 +168,24 @@ function update(source) {
     return d.target.id;
   });
 
-  link.enter().insert("path", "g").attr("class", "link").attr("d", function (d) {
-    var o = {
-      x: source.x0,
-      y: source.y0
-    };
-    return diagonal({
-      source: o,
-      target: o
-    });
-  });
-
-  link.transition().duration(duration).attr("d", diagonal);
+link.enter().insert("svg:path", "g")
+  .style("fill", "none")
+  .style("stroke", "#000")
+  .attr("class", "link")
+  .attr("d", function(d) {
+    var o = { x: source.x0, y: source.y0 };
+    return customDiagonal({ source: o, target: o }); // Use your custom diagonal function here
+  })
+  .transition()
+  .duration(duration)
+  .attr("d", customDiagonal); // Use your custom diagonal function here as well
 
   link.exit().transition().duration(duration).attr("d", function (d) {
     var o = {
       x: source.x,
       y: source.y
     };
-    return diagonal({
+    return customDiagonal({
       source: o,
       target: o
     });
