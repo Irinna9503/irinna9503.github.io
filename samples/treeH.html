@@ -94,11 +94,10 @@ update(root);
 
 d3.select(self.frameElement).style("height", "800px");
 
-var diagonal = d3.linkHorizontal().x(function (d) {
-  return d.y;
-}).y(function (d) {
-  return d.x;
-});
+var diagonal = d3.linkHorizontal()
+    .x(function(d) { return d.y; })
+    .y(function(d) { return d.x; });
+
 
 function update(source) {
   if (!d3.tree) {
