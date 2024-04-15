@@ -98,6 +98,7 @@ var diagonal = d3.linkHorizontal()
     .x(function(d) { return d.y; })
     .y(function(d) { return d.x; });
 
+console.log("Value of diagonal:", diagonal);
 
 function update(source) {
   if (!d3.tree) {
