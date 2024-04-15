@@ -40,11 +40,6 @@ if (!d3.tree) {
   console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
 }
 
-// Check if diagonal function exists in d3.svg
-if (!d3.svg || !d3.svg.diagonal) {
-  console.error("d3.svg.diagonal is not available. Make sure you're using D3 version 7 or above.");
-}
-
 // Check if JSON data loading is successful
 d3.json("flare.json", function(error, flare) {
   if (error) {
@@ -84,14 +79,9 @@ function update(source) {
   }
 
   // Compute the new tree layout.
-  var nodes = d3.tree().nodes(root).reverse(),
-      links = d3.tree().links(nodes);
-
-  // Check if nodes and links are present after computing layout
-  if (!nodes || !links) {
-    console.error("Failed to compute tree layout.");
-    return;
-  }
+  var treeLayout = d3.tree().size([height, width]);
+  var nodes = treeLayout(root).descendants();
+  var links = treeLayout(root).links();
 
   // Normalize for fixed-depth.
   nodes.forEach(function(d) { d.y = d.depth * 180; });
