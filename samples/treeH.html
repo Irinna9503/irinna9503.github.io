@@ -57,8 +57,9 @@
             // Check if JSON data loading is successful
             d3.json("flare.json", function (error, flare) {
                 if (error) {
-                    console.error("Error loading JSON data:", error);
-                    return;
+                        console.error("Error loading JSON data:", error);
+                        console.log(error); // Log the error object for more details
+                        return;
                 }
 
                 console.log("JSON data loaded successfully.");
