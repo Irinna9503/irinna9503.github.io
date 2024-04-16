@@ -160,20 +160,11 @@
 
 function click(event, d) {
     // Extract the value of the clicked node
-    let clickedNodeValue = { row: d.data.row }; // Use the ID of the clicked node
+    let clickedNodeValue = { row: d.data.id }; // Use the ID of the clicked node
     console.log("Clicked Node Value:", clickedNodeValue);
 
-    // Extract the selected nodes from the tree
-    var selectedNodes = [];
-    svg.selectAll(".node").each(function(nodeData) {
-        if (nodeData.data.selected) {
-            selectedNodes.push({ row: nodeData.data.row }); // Use the ID of the selected nodes
-        }
-    });
-    console.log("Selected Node Value:", selectedNodes);
-
     // Post the array of selected nodes to VA
-    va.messagingUtil.postSelectionMessage(resultName, selectedNodes);
+    va.messagingUtil.postSelectionMessage(resultName, clickedNodeValue);
 }
 
 
