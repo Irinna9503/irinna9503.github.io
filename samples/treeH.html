@@ -58,15 +58,6 @@ root.y0 = 0;
 
 console.log("Root:", root);
 
-function collapse(d) {
-  if (d.children) {
-    d._children = d.children;
-    d._children.forEach(collapse);
-    d.children = null;
-  }
-}
-
-root.children.forEach(collapse);
 update(root);
 
 d3.select(self.frameElement).style("height", "800px");
@@ -97,11 +88,9 @@ function update(source) {
 
   var nodeEnter = node.enter().append("g").attr("class", "node").attr("transform", function (d) {
     return "translate(" + source.y0 + "," + source.x0 + ")";
-  }).on("click", click);
-
-  nodeEnter.append("circle").attr("r", 1e-6).style("fill", function (d) {
-    return d._children ? "lightsteelblue" : "#fff";
   });
+
+  nodeEnter.append("circle").attr("r", 4.5).style("fill", "#fff");
 
   nodeEnter.append("text").attr("x", function (d) {
     return d.children || d._children ? -10 : 10;
@@ -109,25 +98,11 @@ function update(source) {
     return d.children || d._children ? "end" : "start";
   }).text(function (d) {
     return d.data.name;
-  }).style("fill-opacity", 1e-6);
+  }).style("fill-opacity", 1);
 
   var nodeUpdate = node.merge(nodeEnter).transition().duration(duration).attr("transform", function (d) {
     return "translate(" + d.y + "," + d.x + ")";
   });
-
-  nodeUpdate.select("circle").attr("r", 4.5).style("fill", function (d) {
-    return d._children ? "lightsteelblue" : "#fff";
-  });
-
-  nodeUpdate.select("text").style("fill-opacity", 1);
-
-  var nodeExit = node.exit().transition().duration(duration).attr("transform", function (d) {
-    return "translate(" + source.y + "," + source.x + ")";
-  }).remove();
-
-  nodeExit.select("circle").attr("r", 1e-6);
-
-  nodeExit.select("text").style("fill-opacity", 1e-6);
 
   var link = svg.selectAll(".link").data(links, function (d) {
     return d.target.id;
@@ -170,18 +145,7 @@ function update(source) {
   });
 }
 
-function click(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-  update(d);
-}
-         });
-
+});
     </script>
 </body>
 </html>
