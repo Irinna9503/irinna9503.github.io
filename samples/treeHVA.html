@@ -31,161 +31,160 @@
     <script>
 
     // Define the JSON data directly in the code
- d3.json("flare.json").then(function(flareData){
+    d3.json("flare.json").then(function(flareData){
 
-// Remaining code for visualization
-var margin = { top: 20, right: 120, bottom: 20, left: 120 },
-  width = 1600 - margin.right - margin.left,
-  height = 1200 - margin.top - margin.bottom;
+        // Define a messaging utility for communication with SAS Visual Analytics
+        var messagingUtil = {
+            postSelectionMessage: function(selection) {
+                // Construct the message with the selection information
+                var message = {
+                    resultName: 'YourResultName', // Replace 'YourResultName' with the appropriate result name
+                    selections: [selection] // Ensure selection is properly formatted
+                };
+                // Send the message to SAS Visual Analytics
+                sendMessage(message);
+            }
+        };
 
-var i = 0,
-  duration = 750,
-  root;
+        // Function to send messages to SAS Visual Analytics
+        function sendMessage(message) {
+            // Logic to post the message to SAS Visual Analytics
+            // You may need to replace this logic with the actual mechanism to send messages
+            // This could involve using postMessage to communicate with the parent window
+            // or making an HTTP request to a server-side endpoint that handles messages
+        }
 
-var svg = d3
-  .select("body")
-  .append("svg")
-  .attr("width", width + margin.right + margin.left)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // Remaining code for visualization
+        var margin = { top: 20, right: 120, bottom: 20, left: 120 },
+            width = 960 - margin.right - margin.left,
+            height = 800 - margin.top - margin.bottom;
 
-// Initialize the root with the flareData
-root = d3.hierarchy(flareData);
+        var i = 0,
+            duration = 750,
+            root;
 
-root.x0 = height / 2;
-root.y0 = 0;
+        var svg = d3
+            .select("body")
+            .append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-console.log("Root:", root);
+        // Initialize the root with the flareData
+        root = d3.hierarchy(flareData);
 
-update(root);
+        root.x0 = height / 2;
+        root.y0 = 0;
 
-d3.select(self.frameElement).style("height", "1200px");
+        console.log("Root:", root);
 
-function update(source) {
-  if (!d3.tree) {
-    console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
-    return;
-  }
+        update(root);
 
-  console.log("Updating with source:", source);
+        d3.select(self.frameElement).style("height", "800px");
 
+        function update(source) {
+            if (!d3.tree) {
+                console.error("d3.tree is not available. Make sure you're using D3 version 7 or above.");
+                return;
+            }
 
-  var treeLayout = d3.tree().size([height, width]);
-  var nodes = treeLayout(root).descendants();
-  var links = treeLayout(root).links();
+            console.log("Updating with source:", source);
 
-  console.log("Nodes:", nodes);
-  console.log("Links:", links);
+            var treeLayout = d3.tree().size([height, width]);
+            var nodes = treeLayout(root).descendants();
+            var links = treeLayout(root).links();
 
-  nodes.forEach(function (d) {
-    d.y = d.depth * 180;
-  });
+            console.log("Nodes:", nodes);
+            console.log("Links:", links);
 
-var node = svg.selectAll(".node")
-    .data(nodes, function(d) { return d.id || (d.id = ++i); });
-	 
+            nodes.forEach(function (d) {
+                d.y = d.depth * 180;
+            });
 
-var nodeEnter = node.enter().append("g")
-    .attr("class", "node")
-    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-    .on("click", click);
+            var node = svg.selectAll(".node").data(nodes, function (d) {
+                return d.id || (d.id = ++i);
+            });
 
-nodeEnter.append("circle")
-    .attr("r", 4.5)
-    .style("fill", "#fff");
+            var nodeEnter = node.enter().append("g").attr("class", "node").attr("transform", function (d) {
+                return "translate(" + source.y0 + "," + source.x0 + ")";
+            }).on("click", click);
 
-nodeEnter.append("text")
-    .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-    .attr("dy", ".35em")
-    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-						
-    .text(function(d) { return d.data.name; })
-    .style("fill-opacity", 1e-6);
+            nodeEnter.append("circle").attr("r", 4.5).style("fill", "#fff");
 
-var nodeUpdate = node.merge(nodeEnter).transition().duration(duration)
-    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-	 
+            nodeEnter.append("text").attr("x", function (d) {
+                return d.children || d._children ? -10 : 10;
+            }).attr("dy", ".35em").attr("text-anchor", function (d) {
+                return d.children || d._children ? "end" : "start";
+            }).text(function (d) {
+                return d.data.name;
+            }).style("fill-opacity", 1);
 
-nodeUpdate.select("circle")
-    .attr("r", 4.5)
-    .style("fill", "#fff");
+            var nodeUpdate = node.merge(nodeEnter).transition().duration(duration).attr("transform", function (d) {
+                return "translate(" + d.y + "," + d.x + ")";
+            });
 
-nodeUpdate.select("text")
-    .style("fill-opacity", 1);
+            var link = svg.selectAll(".link").data(links, function (d) {
+                return d.target.id;
+            });
 
-var nodeExit = node.exit().transition().duration(duration)
-    .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-    .remove();
+            link.enter().insert("svg:path", "g")
+                .style("fill", "none")
+                .style("stroke", "#000")
+                .attr("class", "link")
+                .attr("d", function(d) {
+                    var o = { x: source.x0, y: source.y0 };
+                    return "M" + o.y + "," + o.x
+                        + "C" + (o.y + source.y) / 2 + "," + o.x
+                        + " " + (o.y + source.y) / 2 + "," + source.x
+                        + " " + source.y + "," + source.x;
+                })
+                .transition()
+                .duration(duration)
+                .attr("d", function(d) {
+                    return "M" + d.target.y + "," + d.target.x
+                        + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
+                        + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
+                        + " " + d.source.y + "," + d.source.x;
+                });
 
-nodeExit.select("circle")
-    .attr("r", 1e-6);
+            link.exit().transition().duration(duration).attr("d", function (d) {
+                var o = {
+                    x: source.x,
+                    y: source.y
+                };
+                return "M" + o.y + "," + o.x
+                    + "C" + (o.y + source.y) / 2 + "," + o.x
+                    + " " + (o.y + source.y) / 2 + "," + source.x
+                    + " " + source.y + "," + source.x;
+            }).remove();
 
-nodeExit.select("text")
-    .style("fill-opacity", 1e-6);
+            nodes.forEach(function (d) {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
 
-var link = svg.selectAll(".link")
-    .data(links, function(d) { return d.target.id; });
+        function click(d) {
+            // Extract the selection information from the clicked node (e.g., d.data.name)
+            var selection = d.data.name; // Modify this line to extract the appropriate selection information
+            // Send the selection back to SAS Visual Analytics
+            messagingUtil.postSelectionMessage(selection);
 
-link.enter().insert("path", "g")
-    .attr("class", "link")
-    .attr("d", function(d) {
-       var o = { x: source.x0, y: source.y0 };
-      return "M" + o.y + "," + o.x
-        + "C" + (o.y + source.y) / 2 + "," + o.x
-        + " " + (o.y + source.y) / 2 + "," + source.x
-        + " " + source.y + "," + source.x;
-    })
-												
-													 
-								
-    .merge(link)
-    .transition()
-    .duration(duration)
-    .attr("d", function(d) {
-      return "M" + d.target.y + "," + d.target.x
-        + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
-        + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
-        + " " + d.source.y + "," + d.source.x;
+            // Toggle between collapsing and expanding the node
+            if (d.children) {
+                // Node is expanded, collapse it
+                d._children = d.children;
+                d.children = null;
+            } else {
+                // Node is collapsed, expand it
+                d.children = d._children;
+                d._children = null;
+            }
+            update(d);
+        }
+
     });
-												
-																
-																
-											  
-	   
-
-link.exit().transition().duration(duration).attr("d", function (d) {
-    var o = {
-      x: source.x,
-      y: source.y
-    };
-    return "M" + o.y + "," + o.x
-        + "C" + (o.y + source.y) / 2 + "," + o.x
-        + " " + (o.y + source.y) / 2 + "," + source.x
-        + " " + source.y + "," + source.x;
-  }).remove();
-
-  nodes.forEach(function (d) {
-    d.x0 = d.x;
-    d.y0 = d.y;
-  });
-}
-
-function click(event, d) {
-  console.log("Node clicked:", d.data.name);
-  if (d.children) {
-    // Collapse the node and its children
-    d._children = d.children;
-    d.children = null;
-  } else {
-    // Expand the node
-    d.children = d._children;
-    d._children = null;
-  }
-  update(d);
-}
-
-});
     </script>
 </body>
 </html>
