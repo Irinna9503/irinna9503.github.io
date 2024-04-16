@@ -148,10 +148,12 @@ function update(source) {
 function click(d) {
   if (d.children) {
     // Node is expanded, collapse it
+    d._children = d.children;
     d.children = null;
   } else {
     // Node is collapsed, expand it
     d.children = d._children;
+    d._children = null;
   }
   update(d);
 }
