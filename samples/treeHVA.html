@@ -159,12 +159,23 @@
         }
 
 function click(event, d) {
+    if (d.children) {
+        d._children = d.children;
+        d.children = null;
+    } else {
+        d.children = d._children;
+        d._children = null;
+    }
+    
     // Extract the value of the clicked node
     let clickedNodeValue = [{ row: d.data.row }]; // Use the ID of the clicked node
     console.log("Clicked Node Value:", clickedNodeValue);
 
     // Post the array of selected nodes to VA
     va.messagingUtil.postSelectionMessage(resultName, clickedNodeValue);
+
+    // Update the tree layout
+    update(d, 1600, 5000);
 }
 
 
