@@ -88,7 +88,7 @@ function update(source) {
 
   var nodeEnter = node.enter().append("g").attr("class", "node").attr("transform", function (d) {
     return "translate(" + source.y0 + "," + source.x0 + ")";
-  });
+  }).on("click", click);
 
   nodeEnter.append("circle").attr("r", 4.5).style("fill", "#fff");
 
@@ -143,6 +143,17 @@ function update(source) {
     d.x0 = d.x;
     d.y0 = d.y;
   });
+}
+
+function click(d) {
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else {
+    d.children = d._children;
+    d._children = null;
+  }
+  update(d);
 }
 
 });
