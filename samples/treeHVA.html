@@ -35,6 +35,7 @@
 
         var i = 0; // Declare i variable
         var root;
+        var svg;
 
         function update(source, height, width) {
             console.log("Source:", source);
@@ -137,14 +138,14 @@
             const width = 5000 - margin.right - margin.left;
             const height = 1200 - margin.top - margin.bottom;
 
-            const svg = d3.select("#tree-container")
+            svg = d3.select("#tree-container")
                 .append("svg")
                 .attr("width", width + margin.right + margin.left)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            const root = d3.hierarchy(treeData);
+            root = d3.hierarchy(treeData);
             console.log("Root:", root); // Add this line
 
             root.x0 = height / 2;
@@ -178,32 +179,23 @@
                 data.push(row);
             });
 
-            // Eliminate leaf hierarchy levels with missing value to support unbalanced hierarchies
-            data.forEach((row) => {
-                // identify the last non-missing hierarchy level
-                let index = row.findLastIndex((element) => element != "(missing)");
-                // eliminate the missing value levels (after the last non-missing)
-                if (index >= 0) row.splice(index + 1);
-            });
-
             // Create the equivalent treeData structure
             // solution based on: https://stackoverflow.com/questions/48467764/how-to-convert-array-of-arrays-into-deep-nested-tree-view
-            let treeData = [];
+            let treeData = { name: "root", children: [] };
             let id = 0;
             data.forEach(function (row, rowNumber) {
                 row.reduce(function (tree, key, currIndex, rowArray) {
-                    let temp = tree.find(({ text }) => key === text);
+                    let temp = tree.children.find(node => node.name === key);
                     if (!temp) {
-                        temp = { id: ++id, text: key, children: [] };
-                        // add row information only for last level of hierarchy to make it easier to retrieve the row number to send to VA
-                        if (currIndex == rowArray.length - 1) temp.row = rowNumber;
-                        tree.push(temp);
+                        temp = { name: key, children: [] };
+                        tree.children.push(temp);
                     }
-                    return temp.children;
+                    if (currIndex === rowArray.length - 1) temp.row = rowNumber;
+                    return temp;
                 }, treeData);
             });
 
-            return { name: "root", children: treeData };
+            return treeData;
         }
 
         document.addEventListener("DOMContentLoaded", function (event) {
