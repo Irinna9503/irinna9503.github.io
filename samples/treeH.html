@@ -79,7 +79,7 @@ function update(source) {
 
   console.log("Updating with source:", source);
 
-  if (!source || !source.children) {
+  if (!source || !source.data.children) {
     console.error("No nodes or links to update.");
     return;
   }
