@@ -36,7 +36,7 @@
         var i = 0; // Declare i variable
 
 
-	                function update(source) {
+	                function update(source,height,width) {
                 const treeLayout = d3.tree().size([height, width]);
                 const treeData = treeLayout(root);
                 const nodes = treeData.descendants();
@@ -142,7 +142,7 @@
             root.x0 = height / 2;
             root.y0 = 0;
 
-            update(root);
+            update(root,height,width);
         }
 
         function click(event, d) {
