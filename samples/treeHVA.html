@@ -36,6 +36,7 @@
         var i = 0; // Declare i variable
         var root;
         var svg;
+        var resultName; // Define resultName variable
 
         function update(source, height, width) {
             console.log("Source:", source);
@@ -130,7 +131,10 @@
 
         function onDataReceived(resultData) {
             if (!resultData) return;
-            console.log("Data received:", resultData);
+
+             resultName = resultData.resultName;
+            
+            console.log("Data received:", resultName);
             let treeData = createTreeData(resultData);
             console.log("Tree data created:", treeData);
 
