@@ -204,6 +204,8 @@ function sendSelection(selectedRows, resultName) {
         resultName: resultName,
         selections: selections
     };
+	    console.log("Sending message to SAS Visual Analytics:", message);
+
     sendMessage(message);
 }
 
