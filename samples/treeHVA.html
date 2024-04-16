@@ -154,19 +154,20 @@
             update(root, height, width);
         }
 
-        function click(event, d) {
-            console.log("Node clicked:", d.data.name);
-            if (d.children) {
-                // Collapse the node and its children
-                d._children = d.children;
-                d.children = null;
-            } else {
-                // Expand the node
-                d.children = d._children;
-                d._children = null;
-            }
-            update(d);
-        }
+function click(event, d) {
+    console.log("Node clicked:", d.data.name);
+    if (d.children) {
+        // Collapse the node and its children
+        d._children = d.children;
+        d.children = null;
+    } else {
+        // Expand the node
+        d.children = d._children;
+        d._children = null;
+    }
+    update(d, d3.event.altKey ? d : d.parent); // Pass the parent node to the update function
+}
+
 
         function createTreeData(resultData) {
             // Only use columns that are categories in the tree selector
