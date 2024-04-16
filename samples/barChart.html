@@ -118,6 +118,8 @@ limitations under the License.
 
 		var onclick = function (d, element) {
 			var sel = _chart.selected();
+	        console.log("Sel:", sel); // Log the selections to console
+
 			var selections = [];
 			for (var s of sel) {
 				selections.push({ row: s.index });
