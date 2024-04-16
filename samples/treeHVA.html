@@ -156,45 +156,44 @@
             }
             update(d);
         }
-
 function createTreeData(resultData) {
-    // Only use columns that are categories in the tree selector
-    // Determine the index of the columns to be used
-    const columns = resultData.columns
-        .map((e, i) => ({ type: e.type, index: i }))
-        .filter(e => e.type != "number")
-        .map(e => e.index);
+			// Only use columns that are categories in the tree selector
+			// determine the index of the columns to be used
+			const columns = resultData.columns.map((e, i) => { return { type: e.type, index: i } }).filter(e => e.type != "number").map((e) => e.index);
+			// create copy of the original data with only the columns to be used in the tree selector
+			const data = [];
+			resultData.data.forEach((elem, i) => {
+				const row = elem.filter((e, col) => columns.includes(col));
+				data.push(row);
+			});
 
-    // Create copy of the original data with only the columns to be used in the tree selector
-    const data = resultData.data.map(elem => elem.filter((e, col) => columns.includes(col)));
+			// Eliminate leaf hiearchy levels with missing value to support unbalanced hiearchies
+			data.forEach((row) => {
+				// identify the last non-missing hiearchy level
+				let index = row.findLastIndex((element) => element != "(missing)");
+				// eliminate the missing value levels (after the last non-missing)
+				if (index >= 0) row.splice(index + 1);
+			});
 
-    // Eliminate leaf hierarchy levels with missing value to support unbalanced hierarchies
-    data.forEach(row => {
-        // Identify the last non-missing hierarchy level
-        const index = row.findLastIndex(element => element != "(missing)");
-        // Eliminate the missing value levels (after the last non-missing)
-        if (index >= 0) row.splice(index + 1);
-    });
+			// Create the equivalent treeData structure
+			// solution based on: https://stackoverflow.com/questions/48467764/how-to-convert-array-of-arrays-into-deep-nested-tree-view
+			let treeData = [];
+			let id = 0;
+			data.forEach(function (row, rowNumber) {
+				row.reduce(function (tree, key, currIndex, rowArray) {
+					let temp = tree.find(({ text }) => key === text);
+					if (!temp) {
+						temp = { id: ++id, text: key, children: [] };
+						// add row information only for last level of hierarchy to make it easier to retrieve the row number to send to VA
+						if (currIndex == rowArray.length - 1) temp.row = rowNumber;
+						tree.push(temp);
+					}
+					return temp.children;
+				}, treeData);
+			});
 
-    // Create the equivalent treeData structure
-    let treeData = [];
-    let id = 0;
-    data.forEach((row, rowNumber) => {
-        row.reduce((tree, key, currIndex, rowArray) => {
-            let temp = tree.find(({ text }) => key === text);
-            if (!temp) {
-                temp = { id: ++id, text: key, children: [] };
-                // Add row information only for the last level of hierarchy to make it easier to retrieve the row number to send to VA
-                if (currIndex == rowArray.length - 1) temp.row = rowNumber;
-                tree.push(temp);
-            }
-            return temp.children;
-        }, treeData);
-    });
-
-    return treeData;
-}
-
+			return treeData;
+		}
 
         document.addEventListener("DOMContentLoaded", function (event) {
             // Set up messaging callback
