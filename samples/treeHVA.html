@@ -160,7 +160,7 @@
 
 function click(event, d) {
     // Extract the value of the clicked node
-    let clickedNodeValue = d.data.name;
+     let clickedNodeValue = { row: d.data.name };
       console.log("Height:", clickedNodeValue);
 
     // Send the value of the clicked node to VA
