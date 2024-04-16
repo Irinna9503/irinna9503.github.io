@@ -35,29 +35,8 @@
 
         var i = 0; // Declare i variable
 
-        function onDataReceived(resultData) {
-            if (!resultData) return;
 
-            let treeData = createTreeData(resultData);
-
-            const margin = { top: 20, right: 120, bottom: 20, left: 120 };
-            const width = 5000 - margin.right - margin.left;
-            const height = 1200 - margin.top - margin.bottom;
-
-            const svg = d3.select("#tree-container")
-                .append("svg")
-                .attr("width", width + margin.right + margin.left)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            const root = d3.hierarchy(treeData);
-            root.x0 = height / 2;
-            root.y0 = 0;
-
-            update(root);
-
-            function update(source) {
+	                function update(source) {
                 const treeLayout = d3.tree().size([height, width]);
                 const treeData = treeLayout(root);
                 const nodes = treeData.descendants();
@@ -141,6 +120,29 @@
                     d.y0 = d.y;
                 });
             }
+
+        function onDataReceived(resultData) {
+            if (!resultData) return;
+		 console.log("Data received:", resultData);
+            let treeData = createTreeData(resultData);
+      console.log("Tree data created:", treeData);
+
+            const margin = { top: 20, right: 120, bottom: 20, left: 120 };
+            const width = 5000 - margin.right - margin.left;
+            const height = 1200 - margin.top - margin.bottom;
+
+            const svg = d3.select("#tree-container")
+                .append("svg")
+                .attr("width", width + margin.right + margin.left)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            const root = d3.hierarchy(treeData);
+            root.x0 = height / 2;
+            root.y0 = 0;
+
+            update(root);
         }
 
         function click(event, d) {
