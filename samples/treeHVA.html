@@ -34,9 +34,10 @@
         "use strict";
 
         var i = 0; // Declare i variable
+	var root;
 
 
-	                function update(source,height,width) {
+	function update(source,height,width) {
                 const treeLayout = d3.tree().size([height, width]);
                 const treeData = treeLayout(root);
                 const nodes = treeData.descendants();
