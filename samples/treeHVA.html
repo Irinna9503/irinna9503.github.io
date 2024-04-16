@@ -160,7 +160,7 @@
 
 function click(event, d) {
     // Extract the value of the clicked node
-    let clickedNodeValue = { row: d.data.row }; // Use the ID of the clicked node
+    let clickedNodeValue = [{ row: d.data.row }]; // Use the ID of the clicked node
     console.log("Clicked Node Value:", clickedNodeValue);
 
     // Post the array of selected nodes to VA
