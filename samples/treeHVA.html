@@ -167,7 +167,7 @@ function click(event, d) {
     var selectedNodes = [];
     svg.selectAll(".node").each(function(nodeData) {
         if (nodeData.data.selected) {
-            selectedNodes.push({ row: nodeData.data.row }); // Use the ID of the selected nodes
+            selectedNodes.push({ row: d.data.row }); // Use the ID of the selected nodes
         }
     });
     console.log("Selected Node Value:", selectedNodes);
