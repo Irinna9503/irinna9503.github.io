@@ -173,6 +173,7 @@ function click(event, d) {
             selectedNodes.push({ row: d.data.name });
         }
     });
+    console.log("Selected Node Value:", selectedNodes);
 
     // Post the array of selected nodes to VA
     va.messagingUtil.postSelectionMessage(resultName, selectedNodes);
