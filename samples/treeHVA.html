@@ -34,105 +34,104 @@
         "use strict";
 
         var i = 0; // Declare i variable
-	var root;
+        var root;
+
+        function update(source, height, width) {
+            console.log("Source:", source);
+            console.log("Height:", height);
+            console.log("Width:", width);
+            const treeLayout = d3.tree().size([height, width]);
+            console.log("Tree data:", treeLayout); // Add this line
+            const treeData = treeLayout(root);
+            const nodes = treeData.descendants();
+            const links = treeData.links();
+            console.log("Tree data:", treeData); // Add this line
 
 
-	function update(source,height,width) {
-		 console.log("Source:", source);
-                 console.log("Height:", height);
-                 console.log("Width:", width);
-                const treeLayout = d3.tree().size([height, width]);
-		console.log("Tree data:", treeLayout); // Add this line
-                const treeData = treeLayout(root);
-                const nodes = treeData.descendants();
-                const links = treeData.links();
-		console.log("Tree data:", treeData); // Add this line
+            nodes.forEach(function (d) {
+                d.y = d.depth * 180;
+            });
 
+            var node = svg.selectAll(".node")
+                .data(nodes, function (d) { return d.id || (d.id = ++i); });
 
-                nodes.forEach(function (d) {
-                    d.y = d.depth * 180;
-                });
+            var nodeEnter = node.enter().append("g")
+                .attr("class", "node")
+                .attr("transform", function (d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+                .on("click", click);
 
-                var node = svg.selectAll(".node")
-                    .data(nodes, function(d) { return d.id || (d.id = ++i); });
+            nodeEnter.append("circle")
+                .attr("r", 4.5)
+                .style("fill", "#fff");
 
-                var nodeEnter = node.enter().append("g")
-                    .attr("class", "node")
-                    .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-                    .on("click", click);
+            nodeEnter.append("text")
+                .attr("x", function (d) { return d.children || d._children ? -10 : 10; })
+                .attr("dy", ".35em")
+                .attr("text-anchor", function (d) { return d.children || d._children ? "end" : "start"; })
+                .text(function (d) { return d.data.name; })
+                .style("fill-opacity", 1e-6);
 
-                nodeEnter.append("circle")
-                    .attr("r", 4.5)
-                    .style("fill", "#fff");
+            var nodeUpdate = node.merge(nodeEnter).transition().duration(750)
+                .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; });
 
-                nodeEnter.append("text")
-                    .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-                    .attr("dy", ".35em")
-                    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-                    .text(function(d) { return d.data.name; })
-                    .style("fill-opacity", 1e-6);
+            nodeUpdate.select("circle")
+                .attr("r", 4.5)
+                .style("fill", "#fff");
 
-                var nodeUpdate = node.merge(nodeEnter).transition().duration(750)
-                    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
+            nodeUpdate.select("text")
+                .style("fill-opacity", 1);
 
-                nodeUpdate.select("circle")
-                    .attr("r", 4.5)
-                    .style("fill", "#fff");
+            var nodeExit = node.exit().transition().duration(750)
+                .attr("transform", function (d) { return "translate(" + source.y + "," + source.x + ")"; })
+                .remove();
 
-                nodeUpdate.select("text")
-                    .style("fill-opacity", 1);
+            nodeExit.select("circle")
+                .attr("r", 1e-6);
 
-                var nodeExit = node.exit().transition().duration(750)
-                    .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-                    .remove();
+            nodeExit.select("text")
+                .style("fill-opacity", 1e-6);
 
-                nodeExit.select("circle")
-                    .attr("r", 1e-6);
+            var link = svg.selectAll(".link")
+                .data(links, function (d) { return d.target.id; });
 
-                nodeExit.select("text")
-                    .style("fill-opacity", 1e-6);
-
-                var link = svg.selectAll(".link")
-                    .data(links, function(d) { return d.target.id; });
-
-                link.enter().insert("path", "g")
-                    .attr("class", "link")
-                    .attr("d", function(d) {
-                        var o = { x: source.x0, y: source.y0 };
-                        return "M" + o.y + "," + o.x
-                            + "C" + (o.y + source.y) / 2 + "," + o.x
-                            + " " + (o.y + source.y) / 2 + "," + source.x
-                            + " " + source.y + "," + source.x;
-                    })
-                    .merge(link)
-                    .transition()
-                    .duration(750)
-                    .attr("d", function(d) {
-                        return "M" + d.target.y + "," + d.target.x
-                            + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
-                            + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
-                            + " " + d.source.y + "," + d.source.x;
-                    });
-
-                link.exit().transition().duration(750).attr("d", function (d) {
-                    var o = { x: source.x, y: source.y };
+            link.enter().insert("path", "g")
+                .attr("class", "link")
+                .attr("d", function (d) {
+                    var o = { x: source.x0, y: source.y0 };
                     return "M" + o.y + "," + o.x
                         + "C" + (o.y + source.y) / 2 + "," + o.x
                         + " " + (o.y + source.y) / 2 + "," + source.x
                         + " " + source.y + "," + source.x;
-                }).remove();
-
-                nodes.forEach(function (d) {
-                    d.x0 = d.x;
-                    d.y0 = d.y;
+                })
+                .merge(link)
+                .transition()
+                .duration(750)
+                .attr("d", function (d) {
+                    return "M" + d.target.y + "," + d.target.x
+                        + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
+                        + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
+                        + " " + d.source.y + "," + d.source.x;
                 });
-            }
+
+            link.exit().transition().duration(750).attr("d", function (d) {
+                var o = { x: source.x, y: source.y };
+                return "M" + o.y + "," + o.x
+                    + "C" + (o.y + source.y) / 2 + "," + o.x
+                    + " " + (o.y + source.y) / 2 + "," + source.x
+                    + " " + source.y + "," + source.x;
+            }).remove();
+
+            nodes.forEach(function (d) {
+                d.x0 = d.x;
+                d.y0 = d.y;
+            });
+        }
 
         function onDataReceived(resultData) {
             if (!resultData) return;
-		 console.log("Data received:", resultData);
+            console.log("Data received:", resultData);
             let treeData = createTreeData(resultData);
-      console.log("Tree data created:", treeData);
+            console.log("Tree data created:", treeData);
 
             const margin = { top: 20, right: 120, bottom: 20, left: 120 };
             const width = 5000 - margin.right - margin.left;
@@ -146,12 +145,12 @@
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             const root = d3.hierarchy(treeData);
-	    console.log("Root:", root); // Add this line
+            console.log("Root:", root); // Add this line
 
             root.x0 = height / 2;
             root.y0 = 0;
 
-            update(root,height,width);
+            update(root, height, width);
         }
 
         function click(event, d) {
@@ -167,44 +166,45 @@
             }
             update(d);
         }
-function createTreeData(resultData) {
-			// Only use columns that are categories in the tree selector
-			// determine the index of the columns to be used
-			const columns = resultData.columns.map((e, i) => { return { type: e.type, index: i } }).filter(e => e.type != "number").map((e) => e.index);
-			// create copy of the original data with only the columns to be used in the tree selector
-			const data = [];
-			resultData.data.forEach((elem, i) => {
-				const row = elem.filter((e, col) => columns.includes(col));
-				data.push(row);
-			});
 
-			// Eliminate leaf hiearchy levels with missing value to support unbalanced hiearchies
-			data.forEach((row) => {
-				// identify the last non-missing hiearchy level
-				let index = row.findLastIndex((element) => element != "(missing)");
-				// eliminate the missing value levels (after the last non-missing)
-				if (index >= 0) row.splice(index + 1);
-			});
+        function createTreeData(resultData) {
+            // Only use columns that are categories in the tree selector
+            // determine the index of the columns to be used
+            const columns = resultData.columns.map((e, i) => { return { type: e.type, index: i } }).filter(e => e.type != "number").map((e) => e.index);
+            // create copy of the original data with only the columns to be used in the tree selector
+            const data = [];
+            resultData.data.forEach((elem, i) => {
+                const row = elem.filter((e, col) => columns.includes(col));
+                data.push(row);
+            });
 
-			// Create the equivalent treeData structure
-			// solution based on: https://stackoverflow.com/questions/48467764/how-to-convert-array-of-arrays-into-deep-nested-tree-view
-			let treeData = [];
-			let id = 0;
-			data.forEach(function (row, rowNumber) {
-				row.reduce(function (tree, key, currIndex, rowArray) {
-					let temp = tree.find(({ text }) => key === text);
-					if (!temp) {
-						temp = { id: ++id, text: key, children: [] };
-						// add row information only for last level of hierarchy to make it easier to retrieve the row number to send to VA
-						if (currIndex == rowArray.length - 1) temp.row = rowNumber;
-						tree.push(temp);
-					}
-					return temp.children;
-				}, treeData);
-			});
+            // Eliminate leaf hierarchy levels with missing value to support unbalanced hierarchies
+            data.forEach((row) => {
+                // identify the last non-missing hierarchy level
+                let index = row.findLastIndex((element) => element != "(missing)");
+                // eliminate the missing value levels (after the last non-missing)
+                if (index >= 0) row.splice(index + 1);
+            });
 
-			return treeData;
-		}
+            // Create the equivalent treeData structure
+            // solution based on: https://stackoverflow.com/questions/48467764/how-to-convert-array-of-arrays-into-deep-nested-tree-view
+            let treeData = [];
+            let id = 0;
+            data.forEach(function (row, rowNumber) {
+                row.reduce(function (tree, key, currIndex, rowArray) {
+                    let temp = tree.find(({ text }) => key === text);
+                    if (!temp) {
+                        temp = { id: ++id, text: key, children: [] };
+                        // add row information only for last level of hierarchy to make it easier to retrieve the row number to send to VA
+                        if (currIndex == rowArray.length - 1) temp.row = rowNumber;
+                        tree.push(temp);
+                    }
+                    return temp.children;
+                }, treeData);
+            });
+
+            return { name: "root", children: treeData };
+        }
 
         document.addEventListener("DOMContentLoaded", function (event) {
             // Set up messaging callback
