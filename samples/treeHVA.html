@@ -96,24 +96,27 @@
             var link = svg.selectAll(".link")
                 .data(links, function (d) { return d.target.id; });
 
-            link.enter().insert("path", "g")
-                .attr("class", "link")
-                .attr("d", function (d) {
-                    var o = { x: source.x0, y: source.y0 };
-                    return "M" + o.y + "," + o.x
-                        + "C" + (o.y + source.y) / 2 + "," + o.x
-                        + " " + (o.y + source.y) / 2 + "," + source.x
-                        + " " + source.y + "," + source.x;
-                })
-                .merge(link)
-                .transition()
-                .duration(750)
-                .attr("d", function (d) {
-                    return "M" + d.target.y + "," + d.target.x
-                        + "C" + (d.source.y + d.target.y) / 2 + "," + d.target.x
-                        + " " + (d.source.y + d.target.y) / 2 + "," + d.source.x
-                        + " " + d.source.y + "," + d.source.x;
-                });
+link.enter().insert("path", "g")
+    .attr("class", "link")
+    .attr("d", function (d) {
+        var o = { x: source.x0, y: source.y0 };
+        var midY = (o.y + d.target.y) / 2; // Adjusted midpoint Y coordinate
+        return "M" + o.y + "," + o.x
+            + "C" + midY + "," + o.x // Adjusted control point Y coordinate
+            + " " + midY + "," + d.target.x // Adjusted control point Y coordinate
+            + " " + d.target.y + "," + d.target.x;
+    })
+    .merge(link)
+    .transition()
+    .duration(750)
+    .attr("d", function (d) {
+        var midY = (d.source.y + d.target.y) / 2; // Adjusted midpoint Y coordinate
+        return "M" + d.target.y + "," + d.target.x
+            + "C" + midY + "," + d.target.x // Adjusted control point Y coordinate
+            + " " + midY + "," + d.source.x // Adjusted control point Y coordinate
+            + " " + d.source.y + "," + d.source.x;
+    });
+
 
             link.exit().transition().duration(750).attr("d", function (d) {
                 var o = { x: source.x, y: source.y };
