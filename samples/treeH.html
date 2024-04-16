@@ -79,6 +79,7 @@ function update(source) {
 
   console.log("Updating with source:", source);
 
+
   var treeLayout = d3.tree().size([height, width]);
   var nodes = treeLayout(root).descendants();
   var links = treeLayout(root).links();
@@ -168,7 +169,6 @@ function update(source) {
     d.y0 = d.y;
   });
 }
-
 
 function click(d) {
   if (d.children) {
