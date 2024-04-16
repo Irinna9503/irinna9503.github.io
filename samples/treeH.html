@@ -51,7 +51,7 @@ var svg = d3
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 // Initialize the root with the flareData
-root = d3.hierarchy(flareData[0]);
+root = d3.hierarchy(flareData);
 
 root.x0 = height / 2;
 root.y0 = 0;
