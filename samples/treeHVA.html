@@ -155,30 +155,13 @@
         }
 
 function click(event, d) {
-    console.log("Node clicked:", d.data.name);
-    if (d3.event && d3.event.altKey) {
-        if (d.parent) {
-            // If alt key is pressed, toggle all children
-            d.parent.children.forEach((child) => {
-                if (child !== d && child.children) {
-                    // Collapse all children except the clicked one
-                    collapse(child);
-                }
-            });
-        }
-    } else {
-        if (d.children) {
-            // Collapse the node and its children
-            d._children = d.children;
-            d.children = null;
-        } else {
-            // Expand the node
-            d.children = d._children;
-            d._children = null;
-        }
-    }
-    update(d, d3.event && d3.event.altKey ? d.parent : d); // Pass the parent node to the update function
+    // Extract the value of the clicked node
+    let clickedNodeValue = d.data.name;
+    
+    // Send the value of the clicked node to VA
+    va.messagingUtil.postSelectionMessage(resultName, [clickedNodeValue]);
 }
+
 
 
 
