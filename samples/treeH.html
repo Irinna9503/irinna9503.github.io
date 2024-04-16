@@ -147,17 +147,25 @@ function update(source) {
 
 function click(d) {
   if (d.children) {
-    // Node is expanded, collapse it
+    // Collapse the node and its children
+    d.children.forEach(collapse);
     d._children = d.children;
     d.children = null;
   } else {
-    // Node is collapsed, expand it
+    // Expand the node
     d.children = d._children;
     d._children = null;
   }
   update(d);
 }
 
+function collapse(d) {
+  if (d.children) {
+    d._children = d.children;
+    d._children.forEach(collapse);
+    d.children = null;
+  }
+}
 
 });
     </script>
