@@ -38,10 +38,15 @@
 
 
 	function update(source,height,width) {
+		 console.log("Source:", source);
+                 console.log("Height:", height);
+                 console.log("Width:", width);
                 const treeLayout = d3.tree().size([height, width]);
                 const treeData = treeLayout(root);
                 const nodes = treeData.descendants();
                 const links = treeData.links();
+		console.log("Tree data:", treeData); // Add this line
+
 
                 nodes.forEach(function (d) {
                     d.y = d.depth * 180;
@@ -140,6 +145,8 @@
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             const root = d3.hierarchy(treeData);
+	    console.log("Root:", root); // Add this line
+
             root.x0 = height / 2;
             root.y0 = 0;
 
