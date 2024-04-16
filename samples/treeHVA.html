@@ -160,12 +160,24 @@
 
 function click(event, d) {
     // Extract the value of the clicked node
-     let clickedNodeValue = { row: d.data.name };
-      console.log("Height:", clickedNodeValue);
+    let clickedNodeValue = { row: d.data.name };
+    console.log("Clicked Node Value:", clickedNodeValue);
 
     // Send the value of the clicked node to VA
-    va.messagingUtil.postSelectionMessage(resultName, [clickedNodeValue]);
+    // va.messagingUtil.postSelectionMessage(resultName, [clickedNodeValue]);
+    
+    // Extract the selected nodes from the tree
+    var selectedNodes = [];
+    svg.selectAll(".node").each(function(d) {
+        if (d.data.selected) {
+            selectedNodes.push({ row: d.data.name });
+        }
+    });
+
+    // Post the array of selected nodes to VA
+    va.messagingUtil.postSelectionMessage(resultName, selectedNodes);
 }
+
 
 
 
