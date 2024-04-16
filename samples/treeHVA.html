@@ -42,6 +42,7 @@
                  console.log("Height:", height);
                  console.log("Width:", width);
                 const treeLayout = d3.tree().size([height, width]);
+		console.log("Tree data:", treeLayout); // Add this line
                 const treeData = treeLayout(root);
                 const nodes = treeData.descendants();
                 const links = treeData.links();
