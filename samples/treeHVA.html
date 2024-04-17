@@ -173,6 +173,10 @@ function click(event, d) {
     }
     
     let clickedNodeValue;
+        console.log("Clicked Node Value:", d);
+        console.log("Parent Node Value:", d.parent);
+        console.log("Parent Node Value:", d.name);
+
 
     // Check if the clicked node is a "sas:folder"
     if (d.data.name === "sas:folder") {
