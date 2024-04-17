@@ -175,11 +175,16 @@ function click(event, d) {
     let clickedNodeValue;
         console.log("Clicked Node Value:", d);
         console.log("Parent Node Value:", d.parent);
-        console.log("Parent Node Value:", d.name);
+        console.log("Parent Node Name:", d.parent.name);
+       console.log("Parent Node ID:", d.parent.data.row );
+         console.log("Child Node ID:", d.data.row );
+
+
+
 
 
     // Check if the clicked node is a "sas:folder"
-    if (d.data.name === "sas:folder") {
+    if (d.parent.name === "sas:folder") {
         // If it's a "sas:folder", send its ID to VA
         clickedNodeValue = { row: d.data.row };
     } else {
