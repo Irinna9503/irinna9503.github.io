@@ -170,12 +170,22 @@ function click(event, d) {
         d._children = null;
     }
     
-    let clickedNodeValue = { row: d.data.row || d.data.id }; // Use the ID of the clicked node if row is undefined
+   let clickedNodeValue = { row: d.data.row || d.data.id }; // Use the ID of the clicked node if row is undefined
+    if (clickedNodeValue.row === undefined) {
+        // If row is still undefined, try to find the closest parent node with a defined ID
+        let parentNode = d.parent;
+        while (parentNode) {
+            if (parentNode.data.id !== undefined) {
+                clickedNodeValue.row = parentNode.data.id;
+                break;
+            }
+            parentNode = parentNode.parent;
+        }
+    }
     console.log("Clicked Node Value:", clickedNodeValue);
 
     // Post the array of selected nodes to VA
     va.messagingUtil.postSelectionMessage(resultName, clickedNodeValue);
-
     // Update the tree layout
     update(d, 1600, 5000);
 }
