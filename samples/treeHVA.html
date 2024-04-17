@@ -163,26 +163,32 @@ link.enter().insert("path", "g")
 
 function click(event, d) {
     // Extract the value of the clicked node
-    let clickedNodeValue = { row: d.data.row || d.data.id }; // Use the ID of the clicked node if row is undefined
-    if (clickedNodeValue.row === undefined) {
-        // If row is still undefined, try to find the closest parent node with a defined ID
-        let parentNode = d.parent;
-        while (parentNode) {
-            if (parentNode.data.id !== undefined) {
-                clickedNodeValue.row = parentNode.data.id;
-                break;
-            }
-            parentNode = parentNode.parent;
-        }
+function click(event, d) {
+
+        if (d.children) {
+        d._children = d.children;
+        d.children = null;
+    } else {
+        d.children = d._children;
+        d._children = null;
     }
+    
+    let clickedNodeValue;
+
+    // Check if the clicked node is a "sas:folder"
+    if (d.data.name === "sas:folder") {
+        // If it's a "sas:folder", send its ID to VA
+        clickedNodeValue = { row: d.data.row };
+    } else {
+        // If it's a child node, send its ID to VA
+        clickedNodeValue = { row: d.parent.data.row };
+    }
+
     console.log("Clicked Node Value:", clickedNodeValue);
 
-    // Ensure that selectedRows is an array
-    const selectedRows = Array.isArray(clickedNodeValue) ? clickedNodeValue : [clickedNodeValue];
-
     // Post the array of selected nodes to VA
-    va.messagingUtil.postSelectionMessage(resultName, selectedRows);
-    
+    va.messagingUtil.postSelectionMessage(resultName, [clickedNodeValue]);
+
     // Update the tree layout
     update(d, 1600, 5000);
 }
