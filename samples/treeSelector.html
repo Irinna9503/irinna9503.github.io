@@ -152,7 +152,9 @@ onChange: function () {
         let row = e.row;
         // Check if 'row' exists and has at least two elements
         if (row && row.length >= 2) {
-            return row[0] + '/' + row[1]; // Concatenate 'Source Path' and 'Source Name'
+            let fullPath = row[0] + '/' + row[1]; // Concatenate 'Source Path' and 'Source Name'
+            console.log("Sending to VA:", fullPath); // Log the data being sent to VA
+            return fullPath;
         } else {
             return null; // Return null if 'row' is invalid
         }
@@ -160,10 +162,8 @@ onChange: function () {
 
     // Send selected rows back to VA
     va.messagingUtil.postSelectionMessage(resultName, selectedRows);
-},
-    });
-
 }
+
 
 // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
 // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
