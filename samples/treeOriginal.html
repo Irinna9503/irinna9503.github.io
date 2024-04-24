@@ -142,6 +142,8 @@ SOFTWARE.
 					//console.log("disables", this.disables);
 					//console.log("disabledNodes", this.disabledNodes);
 					let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => e.row);  // returns an array of selected rows, e.g.: [3,4,5]
+		                        console.log("Sending to VA:", selectedRows); // Log the data being sent to VA
+
 					va.messagingUtil.postSelectionMessage(resultName, selectedRows);
 				},
 			});
