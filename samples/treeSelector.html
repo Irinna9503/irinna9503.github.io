@@ -167,10 +167,10 @@ function createTreeDataFromSourcePath(data) {
             if (!existingNode) {
                 let newNode = { id: generateId(), text: part, children: [] };
                 currentNode.push(newNode);
-                currentNode = newNode.children;
-            } else {
-                currentNode = existingNode.children;
+                existingNode = newNode; // Assign existingNode to newNode when it's created
             }
+
+            currentNode = existingNode.children;
 
             // Add row information to the last level node
             if (index === pathParts.length - 1) {
@@ -181,6 +181,7 @@ function createTreeDataFromSourcePath(data) {
 
     return treeData;
 }
+
 
 // Generate unique IDs for tree nodes
 let nodeIdCounter = 0;
