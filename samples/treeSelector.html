@@ -103,8 +103,7 @@ SOFTWARE.
 <body>
     <div id="container"></div>
 
-     <script>
-         
+<script>
     "use strict";
 
     function onDataReceived(resultData) {
@@ -148,58 +147,51 @@ SOFTWARE.
 
             // Define the onChange function inside the object passed to the Tree constructor
             onChange: function () {
-                let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => {
-                    let row = e.row;
-                    if (row && row.length >= 2) {
-                        let fullPath = row[0] + '/' + row[1];
-                        console.log("Sending to VA:", fullPath);
-                        return fullPath;
-                    } else {
-                        return null;
-                    }
+                let selectedRows = this.selectedNodes.map((node) => {
+                    return node.row !== undefined ? node.row : null;
                 }).filter(row => row !== null);
 
+                console.log("Sending to VA:", selectedRows);
                 va.messagingUtil.postSelectionMessage(resultName, selectedRows);
             }
         });
     }
 
     // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
-function createTreeDataFromSourcePath(data) {
-    let treeData = [];
+    function createTreeDataFromSourcePath(data) {
+        let treeData = [];
 
-    data.forEach((row, rowNumber) => {
-        let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
-        let sourceName = row[1]; // Get the value from the second column ('Source Name')
-        let currentNode = treeData;
+        data.forEach((row, rowNumber) => {
+            let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
+            let sourceName = row[1]; // Get the value from the second column ('Source Name')
+            let currentNode = treeData;
 
-        pathParts.forEach((part, index) => {
-            let existingNode = currentNode.find(node => node.text === part);
+            pathParts.forEach((part, index) => {
+                let existingNode = currentNode.find(node => node.text === part);
 
-            if (!existingNode) {
-                let newNode = { id: generateId(), text: part, children: [] };
-                currentNode.push(newNode);
-                existingNode = newNode; // Assign existingNode to newNode when it's created
-            }
-
-            currentNode = existingNode.children;
-
-            // Add row information to the last level node
-            if (index === pathParts.length - 1) {
-                existingNode.row = rowNumber;
-                if (sourceName) { // If 'Source Name' exists, add it as a child node
-                    if (!existingNode.children) {
-                        existingNode.children = []; // Initialize children as an empty array if it's undefined
-                    }
-                    existingNode.children.push({ id: generateId(), text: sourceName, row: rowNumber });
+                if (!existingNode) {
+                    let newNode = { id: generateId(), text: part, children: [] };
+                    currentNode.push(newNode);
+                    existingNode = newNode; // Assign existingNode to newNode when it's created
                 }
-            }
+
+                currentNode = existingNode.children;
+
+                // Add row information to the last level node
+                if (index === pathParts.length - 1) {
+                    existingNode.row = rowNumber;
+                    if (sourceName) { // If 'Source Name' exists, add it as a child node
+                        if (!existingNode.children) {
+                            existingNode.children = []; // Initialize children as an empty array if it's undefined
+                        }
+                        existingNode.children.push({ id: generateId(), text: sourceName, row: rowNumber });
+                    }
+                }
+            });
         });
-    });
 
-    return treeData;
-}
-
+        return treeData;
+    }
 
     // Generate unique IDs for tree nodes
     let nodeIdCounter = 0;
@@ -211,6 +203,7 @@ function createTreeDataFromSourcePath(data) {
         va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
     });
 </script>
+
 
 </body>
 
