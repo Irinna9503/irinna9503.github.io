@@ -154,6 +154,7 @@ SOFTWARE.
 }
 
 // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
+// Function to create tree data from "Source Path" and include "Source Name" at the lowest level
 function createTreeDataFromSourcePath(data) {
     let treeData = [];
 
@@ -177,6 +178,9 @@ function createTreeDataFromSourcePath(data) {
             if (index === pathParts.length - 1) {
                 existingNode.row = row;
                 if (sourceName) { // If 'Source Name' exists, add it as a child node
+                    if (!existingNode.children) {
+                        existingNode.children = []; // Initialize children as an empty array if it's undefined
+                    }
                     existingNode.children.push({ id: generateId(), text: sourceName, row: row });
                 }
             }
