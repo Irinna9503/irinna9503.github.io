@@ -145,10 +145,22 @@ SOFTWARE.
             this.collapseAll();
         },
 
-        onChange: function () {
-            let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => e.row); // returns an array of selected rows, e.g.: [3,4,5]
-            va.messagingUtil.postSelectionMessage(resultName, selectedRows);
-        },
+onChange: function () {
+    // Filter selected nodes to include only those with 'row' information,
+    // then map each selected node to a string representing the concatenated 'Source Path' and 'Source Name'
+    let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => {
+        let row = e.row;
+        // Check if 'row' exists and has at least two elements
+        if (row && row.length >= 2) {
+            return row[0] + '/' + row[1]; // Concatenate 'Source Path' and 'Source Name'
+        } else {
+            return null; // Return null if 'row' is invalid
+        }
+    }).filter(row => row !== null); // Filter out null values
+
+    // Send selected rows back to VA
+    va.messagingUtil.postSelectionMessage(resultName, selectedRows);
+},
     });
 
 }
