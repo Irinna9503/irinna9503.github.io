@@ -153,12 +153,13 @@ SOFTWARE.
 
 }
 
-// Function to create tree data from "Source Path"
+// Function to create tree data from "Source Path" and include "Source Name" at the lowest level
 function createTreeDataFromSourcePath(data) {
     let treeData = [];
 
     data.forEach((row) => {
         let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
+        let sourceName = row[1]; // Get the value from the second column ('Source Name')
         let currentNode = treeData;
 
         pathParts.forEach((part, index) => {
@@ -175,13 +176,15 @@ function createTreeDataFromSourcePath(data) {
             // Add row information to the last level node
             if (index === pathParts.length - 1) {
                 existingNode.row = row;
+                if (sourceName) { // If 'Source Name' exists, add it as a child node
+                    existingNode.children.push({ id: generateId(), text: sourceName, row: row });
+                }
             }
         });
     });
 
     return treeData;
 }
-
 
 // Generate unique IDs for tree nodes
 let nodeIdCounter = 0;
