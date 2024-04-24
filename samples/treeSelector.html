@@ -103,117 +103,111 @@ SOFTWARE.
 <body>
     <div id="container"></div>
 
-    <script>
-        "use strict";
+     <script>
+    "use strict";
 
-       function onDataReceived(resultData) {
-    if (!resultData) return;
+    function onDataReceived(resultData) {
+        if (!resultData) return;
 
-    console.log("Received data from VA:", resultData);
+        console.log("Received data from VA:", resultData);
 
-    let resultName = resultData.resultName;
+        let resultName = resultData.resultName;
 
-    let selections = va.contentUtil.initializeSelections(resultData); // good practice to remove eventual brush columns
+        let selections = va.contentUtil.initializeSelections(resultData); // good practice to remove eventual brush columns
 
-    let treeData;
+        let treeData;
 
-    // Check if the first column is "Source Path"
-    if (resultData.columns.length > 0 && resultData.columns[0].label === "Source Path") {
-        treeData = createTreeDataFromSourcePath(resultData.data);
-    } else {
-        treeData = createTreeData(resultData);
+        // Check if the first column is "Source Path"
+        if (resultData.columns.length > 0 && resultData.columns[0].label === "Source Path") {
+            treeData = createTreeDataFromSourcePath(resultData.data);
+        } else {
+            treeData = createTreeData(resultData);
+        }
+
+        const myTree = new Tree('#container', {
+            data: treeData,
+
+            // only expand level 1 node
+            closeDepth: 1,
+
+            // Just a placeholder: not currently used
+            beforeLoad: function (rawData) {
+                function formatData() {
+                    // do some format
+                }
+                return formatData(rawData);
+            },
+
+            loaded: function () {
+                // do something or set values after Tree loaded callback
+                // do not use arrow function `()=>` , if you use `this`, use function instead.
+                // this context bind current tree instance
+                this.collapseAll();
+            },
+
+            // Define the onChange function inside the object passed to the Tree constructor
+            onChange: function () {
+                let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => {
+                    let row = e.row;
+                    if (row && row.length >= 2) {
+                        let fullPath = row[0] + '/' + row[1];
+                        console.log("Sending to VA:", fullPath);
+                        return fullPath;
+                    } else {
+                        return null;
+                    }
+                }).filter(row => row !== null);
+
+                va.messagingUtil.postSelectionMessage(resultName, selectedRows);
+            }
+        });
     }
 
-    const myTree = new Tree('#container', {
-        data: treeData,
+    // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
+    function createTreeDataFromSourcePath(data) {
+        let treeData = [];
 
-        // only expand level 1 node
-        closeDepth: 1,
+        data.forEach((row) => {
+            let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
+            let sourceName = row[1]; // Get the value from the second column ('Source Name')
+            let currentNode = treeData;
 
-        // Just a placeholder: not currently used
-        beforeLoad: function (rawData) {
-            function formatData() {
-                // do some format
-            }
-            return formatData(rawData);
-        },
+            pathParts.forEach((part, index) => {
+                let existingNode = currentNode.find(node => node.text === part);
 
-        loaded: function () {
-            // do something or set values after Tree loaded callback
-            // do not use arrow function `()=>` , if you use `this`, use function instead.
-            // this context bind current tree instance
-            this.collapseAll();
-        },
-
-onChange: function () {
-    // Filter selected nodes to include only those with 'row' information,
-    // then map each selected node to a string representing the concatenated 'Source Path' and 'Source Name'
-    let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => {
-        let row = e.row;
-        // Check if 'row' exists and has at least two elements
-        if (row && row.length >= 2) {
-            let fullPath = row[0] + '/' + row[1]; // Concatenate 'Source Path' and 'Source Name'
-            console.log("Sending to VA:", fullPath); // Log the data being sent to VA
-            return fullPath;
-        } else {
-            return null; // Return null if 'row' is invalid
-        }
-    }).filter(row => row !== null); // Filter out null values
-
-    // Send selected rows back to VA
-    va.messagingUtil.postSelectionMessage(resultName, selectedRows);
-}
-
-
-// Function to create tree data from "Source Path" and include "Source Name" at the lowest level
-// Function to create tree data from "Source Path" and include "Source Name" at the lowest level
-function createTreeDataFromSourcePath(data) {
-    let treeData = [];
-
-    data.forEach((row) => {
-        let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
-        let sourceName = row[1]; // Get the value from the second column ('Source Name')
-        let currentNode = treeData;
-
-        pathParts.forEach((part, index) => {
-            let existingNode = currentNode.find(node => node.text === part);
-
-            if (!existingNode) {
-                let newNode = { id: generateId(), text: part, children: [] };
-                currentNode.push(newNode);
-                existingNode = newNode; // Assign existingNode to newNode when it's created
-            }
-
-            currentNode = existingNode.children;
-
-            // Add row information to the last level node
-            if (index === pathParts.length - 1) {
-                existingNode.row = row;
-                if (sourceName) { // If 'Source Name' exists, add it as a child node
-                    if (!existingNode.children) {
-                        existingNode.children = []; // Initialize children as an empty array if it's undefined
-                    }
-                    existingNode.children.push({ id: generateId(), text: sourceName, row: row });
+                if (!existingNode) {
+                    let newNode = { id: generateId(), text: part, children: [] };
+                    currentNode.push(newNode);
+                    existingNode = newNode; // Assign existingNode to newNode when it's created
                 }
-            }
+
+                currentNode = existingNode.children;
+
+                // Add row information to the last level node
+                if (index === pathParts.length - 1) {
+                    existingNode.row = row;
+                    if (sourceName) { // If 'Source Name' exists, add it as a child node
+                        if (!existingNode.children) {
+                            existingNode.children = []; // Initialize children as an empty array if it's undefined
+                        }
+                        existingNode.children.push({ id: generateId(), text: sourceName, row: row });
+                    }
+                }
+            });
         });
+
+        return treeData;
+    }
+
+    // Generate unique IDs for tree nodes
+    let nodeIdCounter = 0;
+    function generateId() {
+        return ++nodeIdCounter;
+    }
+
+    document.addEventListener("DOMContentLoaded", function (event) {
+        va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
     });
-
-    return treeData;
-}
-
-// Generate unique IDs for tree nodes
-let nodeIdCounter = 0;
-function generateId() {
-    return ++nodeIdCounter;
-}
-
-
-
-        document.addEventListener("DOMContentLoaded", function (event) {
-            va.messagingUtil.setOnDataReceivedCallback(onDataReceived);
-        });
-
     </script>
 </body>
 
