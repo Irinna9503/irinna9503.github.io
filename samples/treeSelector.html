@@ -106,138 +106,88 @@ SOFTWARE.
     <script>
         "use strict";
 
-        function onDataReceived(resultData) {
-            if (!resultData) return;
+       function onDataReceived(resultData) {
+    if (!resultData) return;
 
-            console.log("Received data from VA:", resultData);
+    console.log("Received data from VA:", resultData);
 
-            let resultName = resultData.resultName;
+    let resultName = resultData.resultName;
 
-            let selections = va.contentUtil.initializeSelections(resultData); // good practice to remove eventual brush columns
+    let selections = va.contentUtil.initializeSelections(resultData); // good practice to remove eventual brush columns
 
-            const treeData = createTreeData(resultData);
+    let treeData;
 
-            const myTree = new Tree('#container', {
-                data: treeData,
+    // Check if the first column is "Source Path"
+    if (resultData.columns.length > 0 && resultData.columns[0].label === "Source Path") {
+        treeData = createTreeDataFromSourcePath(resultData.data);
+    } else {
+        treeData = createTreeData(resultData);
+    }
 
-                // only expand level 1 node
-                closeDepth: 1,
+    const myTree = new Tree('#container', {
+        data: treeData,
 
-                // Just a placeholder: not currently used
-                beforeLoad: function (rawData) {
-                    function formatData() {
-                        // do some format
-                    }
-                    return formatData(rawData);
-                },
+        // only expand level 1 node
+        closeDepth: 1,
 
-                loaded: function () {
-                    // do something or set values after Tree loaded callback
-                    // do not use arrow function `()=>` , if you use `this`, use function instead.
-                    // this context bind current tree instance
-                    this.collapseAll();
-                },
+        // Just a placeholder: not currently used
+        beforeLoad: function (rawData) {
+            function formatData() {
+                // do some format
+            }
+            return formatData(rawData);
+        },
 
-                onChange: function () {
-                    //console.log("values", this.values);
-                    //console.log("selectedNodes", this.selectedNodes);
-                    //console.log("disables", this.disables);
-                    //console.log("disabledNodes", this.disabledNodes);
-                    let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => e.row); // returns an array of selected rows, e.g.: [3,4,5]
-                    va.messagingUtil.postSelectionMessage(resultName, selectedRows);
-                },
-            });
+        loaded: function () {
+            // do something or set values after Tree loaded callback
+            // do not use arrow function `()=>` , if you use `this`, use function instead.
+            // this context bind current tree instance
+            this.collapseAll();
+        },
 
-        }
+        onChange: function () {
+            let selectedRows = this.selectedNodes.filter((e) => e.hasOwnProperty("row")).map((e) => e.row); // returns an array of selected rows, e.g.: [3,4,5]
+            va.messagingUtil.postSelectionMessage(resultName, selectedRows);
+        },
+    });
 
-        // Example of message "resultData" received from VA
-        /*
-        {
-            "version": "1",
-            "resultName": "dd30",
-            "rowCount": 14,
-            "availableRowCount": 14,
-            "data": [
-                [
-                    "Asia",
-                    "Acura",
-                    " MDX"
-                ],
-                ...
-            ],
-            "columns": [
-                {
-                    "name": "bi39",
-                    "label": "Origin",
-                    "type": "string"
-                },
-                ...
-            ]
-        };
-        */
+}
 
-        // Example of "treeData" structure equivalent to "resultData" above
-        // Note: the attrribute "row" did not exist before and was added to support sending selections back to VA
-        /*
-        [
-            {
-                id: 1,
-                text: 'Asia',
-                children: [
-                    {
-                        id: 2,
-                        text: 'Acura',
-                        children: [
-                            {id: 3, text: ' MDX', row: 0},
-                            ...
-                        ],
-                    },
-                    ...
-                ],
-            },
-            ...
-        ];
-        */
+// Function to create tree data from "Source Path"
+function createTreeDataFromSourcePath(data) {
+    let treeData = [];
 
-        // Takes the "resultData" message received from VA and creates the equivalent "treeData" structure that the tree selector object needs
-        function createTreeData(resultData) {
-            // Only use columns that are categories in the tree selector
-            // determine the index of the columns to be used
-            const columns = resultData.columns.map((e, i) => { return { type: e.type, index: i } }).filter(e => e.type != "number").map((e) => e.index);
-            // create copy of the original data with only the columns to be used in the tree selector
-            const data = [];
-            resultData.data.forEach((elem, i) => {
-                const row = elem.filter((e, col) => columns.includes(col));
-                data.push(row);
-            });
+    data.forEach((row) => {
+        let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
+        let currentNode = treeData;
 
-            // Eliminate leaf hierarchy levels with missing value to support unbalanced hierarchies
-            data.forEach((row) => {
-                // identify the last non-missing hierarchy level
-                let index = row.findLastIndex((element) => element != "(missing)");
-                // eliminate the missing value levels (after the last non-missing)
-                if (index >= 0) row.splice(index + 1);
-            });
+        pathParts.forEach((part, index) => {
+            let existingNode = currentNode.find(node => node.text === part);
 
-            // Create the equivalent treeData structure
-            // solution based on: https://stackoverflow.com/questions/48467764/how-to-convert-array-of-arrays-into-deep-nested-tree-view
-            let treeData = [];
-            let id = 0;
-            data.forEach(function (row, rowNumber) {
-                row.reduce(function (tree, key, currIndex, rowArray) {
-                    let temp = tree.find(({ text }) => key === text);
-                    if (!temp) {
-                        temp = { id: ++id, text: key, children: [] };
-                        // add row information only for last level of hierarchy to make it easier to retrieve the row number to send to VA
-                        if (currIndex == rowArray.length - 1) temp.row = rowNumber;
-                        tree.push(temp);
-                    }
-                    return temp.children;
-                }, treeData);
-            });
+            if (!existingNode) {
+                let newNode = { id: generateId(), text: part, children: [] };
+                currentNode.push(newNode);
+                currentNode = newNode.children;
+            } else {
+                currentNode = existingNode.children;
+            }
 
-            return treeData;
-        }
+            // Add row information to the last level node
+            if (index === pathParts.length - 1) {
+                existingNode.row = row;
+            }
+        });
+    });
+
+    return treeData;
+}
+
+// Generate unique IDs for tree nodes
+let nodeIdCounter = 0;
+function generateId() {
+    return ++nodeIdCounter;
+}
+
 
 
         document.addEventListener("DOMContentLoaded", function (event) {
