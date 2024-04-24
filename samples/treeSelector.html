@@ -162,42 +162,60 @@ SOFTWARE.
             }
         });
     }
+// Function to create tree data from "Source Path" and include "Source Name" at the lowest level
+function createTreeDataFromSourcePath(data) {
+    // Create an empty object to store the tree data
+    let treeData = {};
 
-    // Function to create tree data from "Source Path" and include "Source Name" at the lowest level
-    function createTreeDataFromSourcePath(data) {
-        let treeData = [];
+    // Iterate over each row in the data
+    data.forEach((row) => {
+        let currentNode = treeData;
 
-        data.forEach((row) => {
-            let pathParts = row[0].split("/").filter(part => part.trim() !== ""); // Split the path by "/" and remove empty parts
-            let sourceName = row[1]; // Get the value from the second column ('Source Name')
-            let currentNode = treeData;
+        // Split the source path by '/' and iterate over each part
+        let pathParts = row[0].split("/").filter(part => part.trim() !== "");
+        pathParts.forEach((part, index) => {
+            // Check if the current part already exists in the tree data
+            if (!currentNode.hasOwnProperty(part)) {
+                // If it doesn't exist, create a new node for it
+                currentNode[part] = { children: {} };
+            }
+            // Move to the next level of the tree
+            currentNode = currentNode[part].children;
 
-            pathParts.forEach((part, index) => {
-                let existingNode = currentNode.find(node => node.text === part);
-
-                if (!existingNode) {
-                    let newNode = { id: generateId(), text: part, children: [] };
-                    currentNode.push(newNode);
-                    existingNode = newNode; // Assign existingNode to newNode when it's created
+            // If it's the last part of the path, add the row information
+            if (index === pathParts.length - 1) {
+                // Check if 'Source Name' exists and add it as a child node
+                let sourceName = row[1];
+                if (sourceName) {
+                    currentNode[sourceName] = { row: row };
                 }
-
-                currentNode = existingNode.children;
-
-                // Add row information to the last level node
-                if (index === pathParts.length - 1) {
-                    existingNode.row = row;
-                    if (sourceName) { // If 'Source Name' exists, add it as a child node
-                        if (!existingNode.children) {
-                            existingNode.children = []; // Initialize children as an empty array if it's undefined
-                        }
-                        existingNode.children.push({ id: generateId(), text: sourceName, row: row });
-                    }
-                }
-            });
+            }
         });
+    });
 
-        return treeData;
+    // Convert the object-based tree data into an array-based tree data
+    let formattedTreeData = [];
+    for (let key in treeData) {
+        formattedTreeData.push({ text: key, children: convertTreeObjectToArray(treeData[key].children) });
     }
+
+    return formattedTreeData;
+}
+
+// Function to convert object-based tree data into array-based tree data
+function convertTreeObjectToArray(treeObject) {
+    let array = [];
+    for (let key in treeObject) {
+        let node = treeObject[key];
+        if (node.children) {
+            array.push({ text: key, children: convertTreeObjectToArray(node.children) });
+        } else {
+            array.push({ text: key, row: node.row });
+        }
+    }
+    return array;
+}
+
 
     // Generate unique IDs for tree nodes
     let nodeIdCounter = 0;
